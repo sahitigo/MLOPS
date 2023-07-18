@@ -42,7 +42,7 @@ params = {
     'max_depth': [None, 5, 10]
 }
 
-# Perform grid search to find the best hyperparameters
+#Perform grid search to find the best hyperparameters
 grid_search = GridSearchCV(clf, params, cv=3)
 grid_search.fit(X_train, y_train)
 
