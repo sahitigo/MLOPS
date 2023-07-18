@@ -16,10 +16,11 @@ def train_and_evaluate_model(X_train, y_train, X_test, y_test):
     return model, mse
 
 def preprocess_input(input_data):
-    # Convert color to numeric codes
-    color_map = {'D': 0, 'E': 1, 'F': 2, 'G': 3, 'H': 4, 'I': 5, 'J': 6}
+    # Convert color to one-hot encoding
+    input_data = pd.get_dummies(input_data, columns=['color'], drop_first=True)
     
-    input_data['color'] = input_data['color'].map(color_map)
+    # Convert cut to one-hot encoding and drop one category to avoid multicollinearity
+    input_data = pd.get_dummies(input_data, columns=['cut'], drop_first=True)
     
     return input_data
 
