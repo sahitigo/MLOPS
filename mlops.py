@@ -1,5 +1,6 @@
 # app.py
 import streamlit as st
+import seaborn as sns
 import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
@@ -26,8 +27,8 @@ def main():
     st.title("Diamond Price Estimator")
     st.write("Welcome to the Diamond Price Estimator app!")
 
-    # Load the diamond dataset
-    diamonds = pd.read_csv('diamonds.csv')
+    # Load the diamond dataset from seaborn
+    diamonds = sns.load_dataset('diamonds')
 
     # Preprocess the data
     X = diamonds.drop('price', axis=1)
