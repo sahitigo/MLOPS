@@ -14,7 +14,7 @@ def train_and_evaluate_model(X_train, y_train, X_test, y_test):
     f1 = f1_score(y_test, y_pred, average='weighted')
     sensitivity = recall_score(y_test, y_pred, average='weighted')
     
-    return accuracy, f1, sensitivity
+    return clf, accuracy, f1, sensitivity
 
 def main():
     st.title("Diamond Classifier")
@@ -28,15 +28,33 @@ def main():
     y = diamonds['cut']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Train and evaluate the model
-    if st.button("Train Model"):
-        accuracy, f1, sensitivity = train_and_evaluate_model(X_train, y_train, X_test, y_test)
+    # Train the model
+    model, accuracy, f1, sensitivity = train_and_evaluate_model(X_train, y_train, X_test, y_test)
         
-        st.write("Model trained successfully!")
-        st.write("Evaluation Results:")
-        st.write(f"Accuracy: {accuracy}")
-        st.write(f"F1 Score: {f1}")
-        st.write(f"Sensitivity: {sensitivity}")
+    st.write("Model trained successfully!")
+    st.write("Evaluation Results:")
+    st.write(f"Accuracy: {accuracy}")
+    st.write(f"F1 Score: {f1}")
+    st.write(f"Sensitivity: {sensitivity}")
+
+    # User input for prediction
+    st.write("Make a Prediction")
+    carat = st.number_input("Carat:")
+    depth = st.number_input("Depth:")
+    table = st.number_input("Table:")
+    x = st.number_input("x:")
+    y = st.number_input("y:")
+    z = st.number_input("z:")
+    color = st.selectbox("Color:", ['D', 'E', 'F', 'G', 'H', 'I', 'J'])
+    clarity = st.selectbox("Clarity:", ['IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2', 'I1'])
+
+    # Preprocess the input
+    input_data = [[carat, depth, table, x, y, z, color, clarity]]
+    input_df = pd.DataFrame(input_data, columns=['carat', 'depth', 'table', 'x', 'y', 'z', 'color', 'clarity'])
+
+    # Make prediction
+    prediction = model.predict(input_df)[0]
+    st.write("Prediction:", prediction)
 
 if __name__ == '__main__':
     main()
