@@ -64,38 +64,42 @@ def display_app():
         # Train the linear regression model (call the train_linear_regression function)
         model = train_linear_regression(X_train, y_train)
 
-        # Get user inputs for feature values
         feature_values = {}
         for feature in X_train.columns:
-            value = st.text_input(f"Enter value for {feature}")
-            feature_values[feature] = float(value) if value else None
-
+            if X_train[feature].dtype == "object":  # Categorical column
+                unique_values = X_train[feature].unique()
+                selected_value = st.selectbox(f"Select value for {feature}", unique_values)
+                feature_values[feature] = selected_value
+            else:  # Numerical column
+                value = st.text_input(f"Enter value for {feature}")
+                feature_values[feature] = float(value) if value else None
+    
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
-
+    
         # Perform one-hot encoding for the input data
         input_encoded = pd.get_dummies(input_df)
-
+    
         # Align input data with training data to ensure consistent columns
         input_encoded = input_encoded.reindex(columns=X_train.columns, fill_value=0)
-
+    
         # Handle missing values in the user input
         input_encoded.fillna(0, inplace=True)  # Replace missing values with 0
-
+    
         # Make predictions on the input data
         y_pred = model.predict(input_encoded)
-
+    
         # Display the predictions
         st.subheader("Prediction")
         st.write("Target Column:", target_column)
         st.write("Predicted Value:", y_pred[0])
-
+    
         # Calculate MAPE for training and test sets
         y_train_pred = model.predict(X_train)
         y_test_pred = model.predict(X_test)
         train_mape = calculate_mape(y_train, y_train_pred)
         test_mape = calculate_mape(y_test, y_test_pred)
-
+    
         st.subheader("Model Performance")
         st.write("Training MAPE:", train_mape)
         st.write("Test MAPE:", test_mape)
