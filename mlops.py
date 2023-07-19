@@ -19,12 +19,8 @@ def process_file(upload_file, target_column):
     X = df.drop(columns=[target_column])
     y = df[target_column]
 
-    # Perform one-hot encoding for categorical features
-    categorical_features = X.select_dtypes(include=['object']).columns
-    X_encoded = pd.get_dummies(X, columns=categorical_features)
-
     # Split the data into train and test sets
-    X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     return X_train, X_test, y_train, y_test
 
@@ -64,19 +60,13 @@ def display_app():
         feature_values = {}
         for feature in X_train.columns:
             value = st.text_input(f"Enter value for {feature}")
-            feature_values[feature] = float(value) if value else None
+            feature_values[feature] = value
 
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
 
-        # Perform one-hot encoding for categorical features
-        input_encoded = pd.get_dummies(input_df, columns=input_df.select_dtypes(include=['object']).columns)
-
-        # Ensure input DataFrame has the same columns as training data
-        input_encoded = input_encoded.reindex(columns=X_train.columns, fill_value=0)
-
         # Make predictions on the input data
-        y_pred = model.predict(input_encoded)
+        y_pred = model.predict(input_df)
 
         # Display the predictions
         st.subheader("Prediction")
