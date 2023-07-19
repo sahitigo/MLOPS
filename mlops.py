@@ -21,16 +21,27 @@ def process_file(upload_file, target_column):
     # Handle missing values
     X.fillna(0, inplace=True)  # Replace missing values with 0
 
+    # Handle outliers in the target variable (y)
+    Q1 = y.quantile(0.25)
+    Q3 = y.quantile(0.75)
+    IQR = Q3 - Q1
+    y_outlier_removed = y[(y >= Q1 - 1.5 * IQR) & (y <= Q3 + 1.5 * IQR)]
+
+    # Remove rows with null values in both features and target variable
+    df_cleaned = df.dropna(subset=[target_column] + list(X.columns))
+
+    # Separate the cleaned features and target variable
+    X_cleaned = df_cleaned.drop(columns=[target_column])
+    y_cleaned = df_cleaned[target_column]
+
     # Perform one-hot encoding for categorical features
-    X_cat = X.select_dtypes(include='object')
-    X_num = X.select_dtypes(include='number')
-    
-    X_encoded = pd.get_dummies(X)
+    X_encoded = pd.get_dummies(X_cleaned)
 
     # Split the data into train and test sets
-    X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X_encoded, y_cleaned, test_size=0.2, random_state=42)
 
     return X_train, X_test, y_train, y_test
+
 
 # Train a linear regression model
 def train_linear_regression(X, y):
