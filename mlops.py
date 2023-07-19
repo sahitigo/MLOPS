@@ -76,6 +76,9 @@ def display_app():
         # Align input data with training data to ensure consistent columns
         input_encoded = input_encoded.reindex(columns=X_train.columns, fill_value=0)
 
+        # Handle missing values in the user input
+        input_encoded.fillna(0, inplace=True)  # Replace missing values with 0
+
         # Make predictions on the input data
         y_pred = model.predict(input_encoded)
 
