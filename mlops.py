@@ -49,7 +49,7 @@ def train_decision_tree_regression(X, y):
     return model
 
 # Function to select important features
-def select_important_features(X_train, X_test, importance_threshold=0.02):
+def select_important_features(X_train, X_test, y_train, importance_threshold=0.02):
     model = train_decision_tree_regression(X_train, y_train)
     feature_importances = pd.Series(model.feature_importances_, index=X_train.columns)
     important_features = feature_importances[feature_importances > importance_threshold].index.tolist()
@@ -81,7 +81,7 @@ def display_app():
             return
 
         # Train the decision tree regression model and select important features (call the select_important_features function)
-        X_train_selected, X_test_selected = select_important_features(X_train, X_test, importance_threshold=0.02)
+        X_train_selected, X_test_selected = select_important_features(X_train, X_test, y_train, importance_threshold=0.02)
 
         # Get user inputs for feature values
         feature_values = {}
