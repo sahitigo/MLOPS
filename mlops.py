@@ -4,16 +4,11 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_percentage_error
 
 # Function to process the uploaded file
-def process_file(upload_file, target_column, drop_columns):
+def process_file(upload_file, target_column):
     df = pd.read_csv(upload_file)
-
-    # Drop the specified columns
-    df = df.drop(columns=drop_columns)
-
     X = df.drop(columns=[target_column])  # Drop the target column from features
     y = df[target_column]  # Set the target column as the target variable
-
-    return X, y, X.columns
+    return X, y
 
 # Train a linear regression model
 def train_linear_regression(X, y):
@@ -37,26 +32,12 @@ def display_app():
         # Prompt user to enter target column
         target_column = st.text_input("Enter the target column name")
 
-        # Prompt user to enter columns to drop
-        drop_columns_input = st.text_input("Enter columns to drop (comma-separated)")
-
-        # Split the input into individual column names
-        drop_columns = [col.strip() for col in drop_columns_input.split(",")]
-
         # Process the uploaded file
-        X, y, feature_names = process_file(uploaded_file, target_column, drop_columns)
-
-        # Display feature names
-        st.subheader("Feature Names")
-        st.write(feature_names)
-
-        # Display dataset preview
-        st.subheader("Dataset Preview")
-        st.write(df.head())
+        X, y = process_file(uploaded_file, target_column)
 
         # Get user inputs for feature values
         feature_values = {}
-        for feature in feature_names:
+        for feature in X.columns:
             value = st.text_input(f"Enter value for {feature}")
             feature_values[feature] = value
 
