@@ -6,10 +6,14 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_percentage_error
 
 # Function to process the uploaded file
-def process_file(upload_file):
+def process_file(upload_file, target_column):
     df = pd.read_csv(upload_file)
-    X = df.iloc[:, :-1]  # Assuming the features are in the first columns
-    y = df.iloc[:, -1]   # Assuming the target variable is in the last column
+    X = df.drop(columns=[target_column])  # Assuming the target column is specified
+    y = df[target_column]  # Assuming the target column is specified
+
+    # Perform one-hot encoding for categorical features
+    categorical_features = X.select_dtypes(include=['object']).columns
+    X_encoded = pd.get_dummies(X, columns=categorical_features)
 
     # Perform one-hot encoding for categorical features
     categorical_features = X.select_dtypes(include=['object']).columns
