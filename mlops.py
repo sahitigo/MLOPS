@@ -1,4 +1,4 @@
-0import streamlit as st
+import streamlit as st
 import pandas as pd
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_percentage_error
