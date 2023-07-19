@@ -42,7 +42,6 @@ def process_file(upload_file, target_column):
 
     return X_train, X_test, y_train, y_test
 
-
 # Train a Decision Tree regression model
 def train_decision_tree_regression(X, y):
     model = DecisionTreeRegressor(random_state=42)
@@ -82,7 +81,7 @@ def display_app():
             return
 
         # Train the decision tree regression model and select important features (call the select_important_features function)
-        X_train_selected, X_test_selected = select_important_features(X_train, X_test)
+        X_train_selected, X_test_selected = select_important_features(X_train, X_test, importance_threshold=0.02)
 
         # Get user inputs for feature values
         feature_values = {}
