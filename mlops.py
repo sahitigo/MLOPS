@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_percentage_error
@@ -14,14 +13,6 @@ def process_file(upload_file, target_column):
     # Perform one-hot encoding for categorical features
     categorical_features = X.select_dtypes(include=['object']).columns
     X_encoded = pd.get_dummies(X, columns=categorical_features)
-
-    # Perform one-hot encoding for categorical features
-    categorical_features = X.select_dtypes(include=['object']).columns
-    ct = ColumnTransformer(
-        transformers=[('encoder', OneHotEncoder(), categorical_features)],
-        remainder='passthrough'
-    )
-    X_encoded = ct.fit_transform(X)
 
     return X_encoded, y
 
@@ -45,7 +36,8 @@ def display_app():
 
     if uploaded_file is not None:
         # Process the uploaded file
-        X, y = process_file(uploaded_file)
+        target_column = 'target_column_name'  # Replace with the actual name of the target column
+        X, y = process_file(uploaded_file, target_column)
 
         # Train the linear regression model
         model = train_linear_regression(X, y)
