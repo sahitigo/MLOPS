@@ -19,6 +19,9 @@ def process_file(upload_file, target_column):
     X = df.drop(columns=[target_column])
     y = df[target_column]
 
+    # Handle missing values
+    X.fillna(0, inplace=True)  # Replace missing values with 0
+
     # Split the data into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -60,12 +63,13 @@ def display_app():
         feature_values = {}
         for feature in X_train.columns:
             value = st.text_input(f"Enter value for {feature}")
-            feature_values[feature] = value
+            feature_values[feature] = float(value) if value else None
 
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
 
         # Make predictions on the input data
+        input_df.fillna(0, inplace=True)  # Replace missing values with 0
         y_pred = model.predict(input_df)
 
         # Display the predictions
