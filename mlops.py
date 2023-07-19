@@ -15,18 +15,18 @@ def process_file(upload_file, target_column):
         st.error(f"Target column '{target_column}' not found in the dataset.")
         return None, None, None, None
 
+    # Separate numeric and categorical columns
+    numeric_features = df.select_dtypes(include='number').columns
+    categorical_features = df.select_dtypes(include='object').columns
+
     # Drop the target column from features and set it as the target variable
     X = df.drop(columns=[target_column])
     y = df[target_column]
 
-    # Perform one-hot encoding for categorical features
-    categorical_features = X.select_dtypes(include=['object']).columns
-    X_encoded = pd.get_dummies(X, columns=categorical_features)
-
     # Split the data into train and test sets
-    X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    return X_train, X_test, y_train, y_test, categorical_features
+    return X_train, X_test, y_train, y_test, numeric_features, categorical_features
 
 # Train a linear regression model
 def train_linear_regression(X, y):
@@ -51,7 +51,7 @@ def display_app():
         target_column = st.text_input("Enter the target column name")
 
         # Process the uploaded file (call the process_file function)
-        X_train, X_test, y_train, y_test, categorical_features = process_file(uploaded_file, target_column)
+        X_train, X_test, y_train, y_test, numeric_features, categorical_features = process_file(uploaded_file, target_column)
 
         # Check if any of the variables are None (indicating an error occurred)
         if X_train is None or X_test is None or y_train is None or y_test is None:
@@ -60,14 +60,21 @@ def display_app():
         # Train the linear regression model (call the train_linear_regression function)
         model = train_linear_regression(X_train, y_train)
 
-        # Get user inputs for feature values
-        feature_values = {}
+        # Get user inputs for feature values (numeric columns)
+        numeric_values = {}
+        for feature in numeric_features:
+            value = st.number_input(f"Enter value for {feature}")
+            numeric_values[feature] = value
+
+        # Get user inputs for feature values (categorical columns)
+        categorical_values = {}
         for feature in categorical_features:
             value = st.text_input(f"Enter value for {feature}")
-            feature_values[feature] = value
+            categorical_values[feature] = value
 
         # Create a DataFrame with the user inputs
-        input_df = pd.DataFrame([feature_values])
+        input_df = pd.DataFrame([numeric_values])
+        input_df = pd.concat([input_df, pd.DataFrame([categorical_values])], axis=1)
 
         # Perform one-hot encoding for categorical features
         input_encoded = pd.get_dummies(input_df, columns=categorical_features)
