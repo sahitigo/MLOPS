@@ -105,9 +105,9 @@ def display_app():
         clarity_value = clarity_mapping[clarity]
 
         # Button
-         # Button
         if st.button("Predict Price"):
             st.write("Price Predicted!")
+    
             # Convert input values to float
             carat = float(carat)
             depth = float(depth)
@@ -122,9 +122,9 @@ def display_app():
             else:
                 # Perform prediction if the input data is valid
                 volume = x * y * z
-                input_data = [[carat, cut_value, color_value, clarity_value, depth, table, volume]]
+                input_data = [[carat, depth, table, x, y, z, volume, cut_value, color_value, clarity_value]]
     
-                # Align the input data with the training data to ensure consistent columns
+                # Convert input_data to DataFrame with the same columns as X_train
                 input_df = pd.DataFrame(input_data, columns=X_train.columns)
     
                 # Make the prediction
