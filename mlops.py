@@ -1,31 +1,29 @@
 import streamlit as st
 from sklearn.datasets import fetch_california_housing
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_percentage_error
 
 # Load the California Housing dataset
 data = fetch_california_housing()
 X = data.data
 y = data.target
 
-# Split the dataset into training and test sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
 # Train a linear regression model
 model = LinearRegression()
-model.fit(X_train, y_train)
+model.fit(X, y)
 
-# Predict on the training and test sets
-y_train_pred = model.predict(X_train)
-y_test_pred = model.predict(X_test)
+# Display input fields for feature values
+st.title("California Housing Price Prediction")
+st.header("Enter Feature Values")
+feature_names = data.feature_names
+feature_values = []
 
-# Calculate MAPE for training and test sets
-train_mape = mean_absolute_percentage_error(y_train, y_train_pred) * 100
-test_mape = mean_absolute_percentage_error(y_test, y_test_pred) * 100
+for feature_name in feature_names:
+    value = st.text_input(feature_name)
+    feature_values.append(float(value) if value else 0.0)
 
-# Display the results
-st.title("Linear Regression Model Evaluation")
-st.header("Dataset: California Housing")
-st.write("Train MAPE:", train_mape)
-st.write("Test MAPE:", test_mape)
+# Predict the housing price based on the input features
+prediction = model.predict([feature_values])[0]
+
+# Display the predicted housing price
+st.header("Predicted Housing Price")
+st.write(f"${prediction:.2f}")
