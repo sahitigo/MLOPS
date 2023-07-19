@@ -1,4 +1,4 @@
-import streamlit as st
+0import streamlit as st
 import pandas as pd
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_percentage_error
@@ -49,7 +49,7 @@ def train_decision_tree_regression(X, y):
     return model
 
 # Function to select important features
-def select_important_features(X_train, X_test, y_train, importance_threshold=0.02):
+def select_important_features(X_train, X_test, y_train, importance_threshold=0.0001):
     model = train_decision_tree_regression(X_train, y_train)
     feature_importances = pd.Series(model.feature_importances_, index=X_train.columns)
     important_features = feature_importances[feature_importances > importance_threshold].index.tolist()
