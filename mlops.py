@@ -104,7 +104,6 @@ def display_app():
         clarity_mapping = {"I1": 1, "SI2": 2, "SI1": 3, "VS2": 4, "VS1": 5, "VVS2": 6, "VVS1": 7, "IF": 8}
         clarity_value = clarity_mapping[clarity]
 
-        # Button
         if st.button("Predict Price"):
             st.write("Price Predicted!")
     
@@ -127,8 +126,14 @@ def display_app():
                 # Convert input_data to DataFrame with the same columns as X_train
                 input_df = pd.DataFrame(input_data, columns=X_train.columns)
     
+                # Perform one-hot encoding for the input data
+                input_df_encoded = pd.get_dummies(input_df)
+    
+                # Align the input data with the training data to ensure consistent columns
+                input_df_aligned, _ = input_df_encoded.align(X_train, join='right', axis=1, fill_value=0)
+    
                 # Make the prediction
-                yhat_test = model.predict(input_df)
+                yhat_test = model.predict(input_df_aligned)
                 st.write("Diamond Price is $", yhat_test[0])
 
 # Run the app
