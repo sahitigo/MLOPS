@@ -7,6 +7,10 @@ from sklearn.metrics import mean_absolute_percentage_error
 # Function to process the uploaded file
 def process_file(upload_file, target_column):
     df = pd.read_csv(upload_file)
+    if target_column not in df.columns:
+        st.error(f"Target column '{target_column}' not found in the dataset.")
+        return None, None
+
     X = df.drop(columns=[target_column])  # Drop the target column from features
     y = df[target_column]  # Set the target column as the target variable
 
@@ -40,6 +44,9 @@ def display_app():
 
         # Process the uploaded file
         X, y = process_file(uploaded_file, target_column)
+
+        if X is None or y is None:
+            return
 
         # Train the linear regression model
         model = train_linear_regression(X, y)
