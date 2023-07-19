@@ -69,7 +69,7 @@ def display_app():
 
         # Get user inputs for feature values
         feature_values = {}
-        for feature in X_train.columns:
+        for feature in X.columns:
             value = st.text_input(f"Enter value for {feature}")
             feature_values[feature] = float(value) if value else None
 
