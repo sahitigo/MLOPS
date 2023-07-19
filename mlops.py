@@ -1,29 +1,54 @@
 import streamlit as st
-from sklearn.datasets import fetch_california_housing
+import pandas as pd
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_percentage_error
 
-# Load the California Housing dataset
-data = fetch_california_housing()
-X = data.data
-y = data.target
+# Function to process the uploaded file
+def process_file(upload_file):
+    df = pd.read_csv(upload_file)
+    X = df.iloc[:, :-1].values  # Assuming the features are in the first columns
+    y = df.iloc[:, -1].values   # Assuming the target variable is in the last column
+    return X, y
 
 # Train a linear regression model
-model = LinearRegression()
-model.fit(X, y)
+def train_linear_regression(X, y):
+    model = LinearRegression()
+    model.fit(X, y)
+    return model
 
-# Display input fields for feature values
-st.title("California Housing Price Prediction")
-st.header("Enter Feature Values")
-feature_names = data.feature_names
-feature_values = []
+# Function to calculate MAPE
+def calculate_mape(y_true, y_pred):
+    return mean_absolute_percentage_error(y_true, y_pred) * 100
 
-for feature_name in feature_names:
-    value = st.text_input(feature_name)
-    feature_values.append(float(value) if value else 0.0)
+# Display file upload and model evaluation
+def display_app():
+    st.title("Linear Regression with Custom Dataset")
+    st.header("Upload Your Data")
 
-# Predict the housing price based on the input features
-prediction = model.predict([feature_values])[0]
+    # File upload control
+    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
-# Display the predicted housing price
-st.header("Predicted Housing Price")
-st.write(f"${prediction:.2f}")
+    if uploaded_file is not None:
+        # Process the uploaded file
+        X, y = process_file(uploaded_file)
+
+        # Train the linear regression model
+        model = train_linear_regression(X, y)
+
+        # Predict on the training set
+        y_pred = model.predict(X)
+
+        # Calculate MAPE
+        mape = calculate_mape(y, y_pred)
+
+        # Display the results
+        st.subheader("Data Summary")
+        st.write("Number of samples:", X.shape[0])
+        st.write("Number of features:", X.shape[1])
+        st.subheader("Model Evaluation")
+        st.write("Mean Absolute Percentage Error (MAPE):", mape)
+
+
+# Run the app
+if __name__ == "__main__":
+    display_app()
