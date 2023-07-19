@@ -43,19 +43,20 @@ def process_file(upload_file, target_column):
     return X_train, X_test, y_train, y_test
 
 
-# Train a linear regression model
+# Train a Decision Tree regression model
 def train_decision_tree_regression(X, y):
     model = DecisionTreeRegressor(random_state=42)
     model.fit(X, y)
     return model
- # Function to select important features
-def select_important_features(X_train, X_test, importance_threshold=0.05):
+
+# Function to select important features
+def select_important_features(X_train, X_test, importance_threshold=0.02):
     model = train_decision_tree_regression(X_train, y_train)
     feature_importances = pd.Series(model.feature_importances_, index=X_train.columns)
     important_features = feature_importances[feature_importances > importance_threshold].index.tolist()
     X_train_selected = X_train[important_features]
     X_test_selected = X_test[important_features]
-    return X_train_selected, X_test_selected   
+    return X_train_selected, X_test_selected
 
 # Function to calculate MAPE
 def calculate_mape(y_true, y_pred):
@@ -63,7 +64,7 @@ def calculate_mape(y_true, y_pred):
 
 # Display file upload and model evaluation
 def display_app():
-    st.title("Decision Tree Regression with Diamond Dataset")  # Corrected the title
+    st.title("Decision Tree Regression with Diamond Dataset")
     st.header("Upload Your Data")
 
     # File upload control
@@ -80,13 +81,12 @@ def display_app():
         if X_train is None or X_test is None or y_train is None or y_test is None:
             return
 
-        # Train the decision tree regression model (call the train_decision_tree_regression function)
-        X_train_selected, X_test_selected = select_important_features(X_train, X_test)  
-
+        # Train the decision tree regression model and select important features (call the select_important_features function)
+        X_train_selected, X_test_selected = select_important_features(X_train, X_test)
 
         # Get user inputs for feature values
         feature_values = {}
-        for feature in X_train.columns:
+        for feature in X_train_selected.columns:
             value = st.text_input(f"Enter value for {feature}")
             feature_values[feature] = float(value) if value else None
 
@@ -97,10 +97,13 @@ def display_app():
         input_encoded = pd.get_dummies(input_df)
 
         # Align input data with training data to ensure consistent columns
-        input_encoded = input_encoded.reindex(columns=X_train.columns, fill_value=0)
+        input_encoded = input_encoded.reindex(columns=X_train_selected.columns, fill_value=0)
 
         # Handle missing values in the user input
         input_encoded.fillna(0, inplace=True)  # Replace missing values with 0
+
+        # Train the model on the selected features
+        model = train_decision_tree_regression(X_train_selected, y_train)
 
         # Make predictions on the input data
         y_pred = model.predict(input_encoded)
@@ -111,8 +114,8 @@ def display_app():
         st.write("Predicted Value:", y_pred[0])
 
         # Calculate MAPE for training and test sets
-        y_train_pred = model.predict(X_train)
-        y_test_pred = model.predict(X_test)
+        y_train_pred = model.predict(X_train_selected)
+        y_test_pred = model.predict(X_test_selected)
         train_mape = calculate_mape(y_train, y_train_pred)
         test_mape = calculate_mape(y_test, y_test_pred)
 
