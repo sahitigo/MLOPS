@@ -53,9 +53,18 @@ def train_decision_tree_regression(X, y):
 def calculate_mape(y_true, y_pred):
     return mean_absolute_percentage_error(y_true, y_pred) * 100
 
+def get_user_input(feature, is_numeric):
+    if is_numeric:
+        value = st.text_input(f"Enter value for {feature}")
+        return float(value) if value else None
+    else:
+        unique_values = feature_values[feature]
+        selected_value = st.radio(f"Select value for {feature}", unique_values)
+        return selected_value
+
 # Display file upload and model evaluation
 def display_app():
-    st.title("Decision Tree Regression with Diamond Dataset")  # Corrected the title
+    st.title("Decision Tree Regression with Diamond Dataset")
     st.header("Upload Your Data")
 
     # File upload control
@@ -73,13 +82,13 @@ def display_app():
             return
 
         # Train the decision tree regression model (call the train_decision_tree_regression function)
-        model = train_decision_tree_regression(X_train, y_train)  
+        model = train_decision_tree_regression(X_train, y_train)
 
         # Get user inputs for feature values
         feature_values = {}
         for feature in X_train.columns:
-            value = st.text_input(f"Enter value for {feature}")
-            feature_values[feature] = float(value) if value else None
+            is_numeric = X_train[feature].dtype.kind in 'biufc'  # Check if the feature is numeric
+            feature_values[feature] = get_user_input(feature, is_numeric)
 
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
