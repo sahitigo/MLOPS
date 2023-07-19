@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.model_selection import train_test_split
@@ -15,15 +14,18 @@ def process_file(upload_file, target_column):
         st.error(f"Target column '{target_column}' not found in the dataset.")
         return None, None, None, None
 
-    # Drop the target column from features and set it as the target variable
+    # Separate the features and target variable
     X = df.drop(columns=[target_column])
     y = df[target_column]
 
     # Handle missing values
     X.fillna(0, inplace=True)  # Replace missing values with 0
 
+    # Perform one-hot encoding for categorical features
+    X_encoded = pd.get_dummies(X)
+
     # Split the data into train and test sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
 
     return X_train, X_test, y_train, y_test
 
@@ -68,9 +70,14 @@ def display_app():
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
 
+        # Perform one-hot encoding for the input data
+        input_encoded = pd.get_dummies(input_df)
+
+        # Align input data with training data to ensure consistent columns
+        input_encoded = input_encoded.reindex(columns=X_train.columns, fill_value=0)
+
         # Make predictions on the input data
-        input_df.fillna(0, inplace=True)  # Replace missing values with 0
-        y_pred = model.predict(input_df)
+        y_pred = model.predict(input_encoded)
 
         # Display the predictions
         st.subheader("Prediction")
