@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.model_selection import train_test_split
 
@@ -44,8 +44,8 @@ def process_file(upload_file, target_column):
 
 
 # Train a linear regression model
-def train_linear_regression(X, y):
-    model = LinearRegression()
+def train_decision_tree_regression(X, y):
+    model = DecisionTreeRegressor(random_state=42)
     model.fit(X, y)
     return model
 
@@ -73,7 +73,7 @@ def display_app():
             return
 
         # Train the linear regression model (call the train_linear_regression function)
-        model = train_linear_regression(X_train, y_train)
+         model = train_decision_tree_regression(X_train, y_train)
 
         # Get user inputs for feature values
         feature_values = {}
