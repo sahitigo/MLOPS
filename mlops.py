@@ -6,14 +6,25 @@ from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.model_selection import train_test_split
 
 # Function to process the uploaded file
-def process_file(upload_file, target_column):
+def process_file(upload_file, target_column, selected_features):
+    # Read the CSV file into a DataFrame
     df = pd.read_csv(upload_file)
+
+    # Check if the target column exists in the DataFrame
     if target_column not in df.columns:
         st.error(f"Target column '{target_column}' not found in the dataset.")
         return None, None, None, None
 
-    X = df.drop(columns=[target_column])  # Drop the target column from features
-    y = df[target_column]  # Set the target column as the target variable
+    # Filter the DataFrame based on the selected features
+    selected_columns = [target_column] + selected_features
+    df_selected = df[selected_columns]
+
+    # Drop rows with missing values
+    df_selected.dropna(inplace=True)
+
+    # Split the data into features (X) and target variable (y)
+    X = df_selected.drop(columns=[target_column])
+    y = df_selected[target_column]
 
     # Perform one-hot encoding for categorical features
     categorical_features = X.select_dtypes(include=['object']).columns
@@ -46,20 +57,25 @@ def display_app():
         # Prompt user to enter target column
         target_column = st.text_input("Enter the target column name")
 
-        # Process the uploaded file
-        X_train, X_test, y_train, y_test = process_file(uploaded_file, target_column)
+        # Prompt user to select features present
+        all_features = pd.read_csv(uploaded_file, nrows=1).columns.tolist()
+        selected_features = st.multiselect("Select features present in the dataset", all_features)
 
+        # Process the uploaded file (call the process_file function)
+        X_train, X_test, y_train, y_test = process_file(uploaded_file, target_column, selected_features)
+
+        # Check if any of the variables are None (indicating an error occurred)
         if X_train is None or X_test is None or y_train is None or y_test is None:
             return
 
-        # Train the linear regression model
+        # Train the linear regression model (call the train_linear_regression function)
         model = train_linear_regression(X_train, y_train)
 
-        # Predict on the training set
+        # Predict on the training set (use the predict method of the model)
         y_train_pred = model.predict(X_train)
         mape_train = calculate_mape(y_train, y_train_pred)
 
-        # Predict on the test set
+        # Predict on the test set (use the predict method of the model)
         y_test_pred = model.predict(X_test)
         mape_test = calculate_mape(y_test, y_test_pred)
 
