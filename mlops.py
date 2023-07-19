@@ -64,31 +64,21 @@ def get_user_input(feature, is_numeric):
 
 # Display file upload and model evaluation
 def display_app():
-    st.title("Decision Tree Regression with Diamond Dataset")
-    st.header("Upload Your Data")
-
-    # File upload control
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    # ... (same as in the previous code)
 
     if uploaded_file is not None:
-        # Prompt user to enter target column
-        target_column = st.text_input("Enter the target column name")
-
-        # Process the uploaded file (call the process_file function)
-        X_train, X_test, y_train, y_test = process_file(uploaded_file, target_column)
-
-        # Check if any of the variables are None (indicating an error occurred)
-        if X_train is None or X_test is None or y_train is None or y_test is None:
-            return
-
-        # Train the decision tree regression model (call the train_decision_tree_regression function)
-        model = train_decision_tree_regression(X_train, y_train)
+        # ... (same as in the previous code)
 
         # Get user inputs for feature values
         feature_values = {}
         for feature in X_train.columns:
             is_numeric = X_train[feature].dtype.kind in 'biufc'  # Check if the feature is numeric
-            feature_values[feature] = get_user_input(feature, is_numeric)
+
+            if is_numeric:
+                feature_values[feature] = get_user_input(feature, is_numeric)
+            else:
+                unique_values = X_train[feature].unique()
+                feature_values[feature] = get_user_input(feature, is_numeric)
 
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
