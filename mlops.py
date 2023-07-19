@@ -5,7 +5,7 @@ from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.model_selection import train_test_split
 
 # Function to process the uploaded file
-def process_file(upload_file, target_column):
+def process_file(upload_file, target_column, necessary_features):
     # Read the CSV file into a DataFrame
     df = pd.read_csv(upload_file)
 
@@ -13,6 +13,9 @@ def process_file(upload_file, target_column):
     if target_column not in df.columns:
         st.error(f"Target column '{target_column}' not found in the dataset.")
         return None, None, None, None
+
+    # Filter DataFrame to include only necessary features
+    df = df[[target_column] + necessary_features]
 
     # Separate the features and target variable
     X = df.drop(columns=[target_column])
