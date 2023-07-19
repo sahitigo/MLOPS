@@ -36,11 +36,18 @@ def display_app():
         # Prompt user to enter columns to drop
         drop_columns_input = st.text_input("Enter columns to drop (comma-separated)")
 
-        # Split the input into individual column names
+        # Split the input into individual column names and remove leading/trailing whitespaces
         drop_columns = [col.strip() for col in drop_columns_input.split(",")]
 
         # Process the uploaded file
         X, y = process_file(uploaded_file, target_column, drop_columns)
+
+        # Check if any of the variables are None (indicating an error occurred)
+        if X is None or y is None:
+            return
+
+        # Train the linear regression model
+        model = train_linear_regression(X, y)
 
         # Get user inputs for feature values
         feature_values = {}
@@ -51,18 +58,8 @@ def display_app():
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
 
-        # Train the linear regression model using the original features
-        model = train_linear_regression(X, y)
-
-        # Perform one-hot encoding for categorical features
-        X_encoded = pd.get_dummies(X, columns=X.select_dtypes(include=['object']).columns)
-
-        # Ensure input DataFrame has the same columns as training data
-        input_encoded = pd.get_dummies(input_df, columns=X.select_dtypes(include=['object']).columns)
-        input_encoded = input_encoded.reindex(columns=X_encoded.columns, fill_value=0)
-
         # Make predictions on the input data
-        y_pred = model.predict(input_encoded)
+        y_pred = model.predict(input_df)
 
         # Display the predictions
         st.subheader("Prediction")
