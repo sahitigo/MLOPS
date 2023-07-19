@@ -8,7 +8,12 @@ def process_file(upload_file, target_column):
     df = pd.read_csv(upload_file)
     X = df.drop(columns=[target_column])  # Drop the target column from features
     y = df[target_column]  # Set the target column as the target variable
-    return X, y
+
+    # Perform one-hot encoding for categorical features
+    categorical_features = X.select_dtypes(include=['object']).columns
+    X_encoded = pd.get_dummies(X, columns=categorical_features)
+
+    return X_encoded, y
 
 # Train a linear regression model
 def train_linear_regression(X, y):
@@ -47,8 +52,14 @@ def display_app():
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
 
+        # Perform one-hot encoding for categorical features
+        input_encoded = pd.get_dummies(input_df, columns=X.select_dtypes(include=['object']).columns)
+
+        # Ensure input DataFrame has the same columns as training data
+        input_encoded = input_encoded.reindex(columns=X.columns, fill_value=0)
+
         # Make predictions on the input data
-        y_pred = model.predict(input_df)
+        y_pred = model.predict(input_encoded)
 
         # Display the predictions
         st.subheader("Prediction")
