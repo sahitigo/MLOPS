@@ -7,8 +7,8 @@ from sklearn.metrics import mean_absolute_percentage_error
 # Function to process the uploaded file
 def process_file(upload_file, target_column):
     df = pd.read_csv(upload_file)
-    X = df.drop(columns=[target_column])  # Assuming the target column is specified
-    y = df[target_column]  # Assuming the target column is specified
+    X = df.drop(columns=[target_column])  # Drop the target column from features
+    y = df[target_column]  # Set the target column as the target variable
 
     # Perform one-hot encoding for categorical features
     categorical_features = X.select_dtypes(include=['object']).columns
@@ -35,8 +35,10 @@ def display_app():
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
     if uploaded_file is not None:
+        # Prompt user to enter target column
+        target_column = st.text_input("Enter the target column name")
+
         # Process the uploaded file
-        target_column = 'target_column_name'  # Replace with the actual name of the target column
         X, y = process_file(uploaded_file, target_column)
 
         # Train the linear regression model
@@ -54,7 +56,6 @@ def display_app():
         st.write("Number of features:", X.shape[1])
         st.subheader("Model Evaluation")
         st.write("Mean Absolute Percentage Error (MAPE):", mape)
-
 
 # Run the app
 if __name__ == "__main__":
