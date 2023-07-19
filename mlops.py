@@ -105,6 +105,7 @@ def display_app():
         clarity_value = clarity_mapping[clarity]
 
         # Button
+         # Button
         if st.button("Predict Price"):
             st.write("Price Predicted!")
             # Convert input values to float
@@ -114,7 +115,7 @@ def display_app():
             x = float(x)
             y = float(y)
             z = float(z)
-
+    
             # Ensure all input fields are filled
             if not all([carat, depth, table, x, y, z]):
                 st.warning("Please fill all input fields.")
@@ -122,12 +123,13 @@ def display_app():
                 # Perform prediction if the input data is valid
                 volume = x * y * z
                 input_data = [[carat, cut_value, color_value, clarity_value, depth, table, volume]]
-                if len(input_data[0]) != len(X_train.columns):
-                    st.warning("Invalid input data. Make sure all features are present.")
-                else:
-                    # Make the prediction
-                    yhat_test = model.predict(input_data)
-                    st.write("Diamond Price is $", yhat_test[0])
+    
+                # Align the input data with the training data to ensure consistent columns
+                input_df = pd.DataFrame(input_data, columns=X_train.columns)
+    
+                # Make the prediction
+                yhat_test = model.predict(input_df)
+                st.write("Diamond Price is $", yhat_test[0])
 
 # Run the app
 if __name__ == "__main__":
