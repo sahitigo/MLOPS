@@ -60,22 +60,28 @@ def display_app():
         # Train the linear regression model (call the train_linear_regression function)
         model = train_linear_regression(X_train, y_train)
 
-        # Predict on the training set (use the predict method of the model)
-        y_train_pred = model.predict(X_train)
-        mape_train = calculate_mape(y_train, y_train_pred)
+        # Get user inputs for feature values
+        feature_values = {}
+        for feature in X_train.columns:
+            value = st.text_input(f"Enter value for {feature}")
+            feature_values[feature] = float(value) if value else None
 
-        # Predict on the test set (use the predict method of the model)
-        y_test_pred = model.predict(X_test)
-        mape_test = calculate_mape(y_test, y_test_pred)
+        # Create a DataFrame with the user inputs
+        input_df = pd.DataFrame([feature_values])
 
-        # Display the results
-        st.subheader("Data Summary")
-        st.write("Train set samples:", X_train.shape[0])
-        st.write("Test set samples:", X_test.shape[0])
-        st.write("Number of features:", X_train.shape[1])
-        st.subheader("Model Evaluation")
-        st.write("Train set MAPE:", mape_train)
-        st.write("Test set MAPE:", mape_test)
+        # Perform one-hot encoding for categorical features
+        input_encoded = pd.get_dummies(input_df, columns=input_df.select_dtypes(include=['object']).columns)
+
+        # Ensure input DataFrame has the same columns as training data
+        input_encoded = input_encoded.reindex(columns=X_train.columns, fill_value=0)
+
+        # Make predictions on the input data
+        y_pred = model.predict(input_encoded)
+
+        # Display the predictions
+        st.subheader("Prediction")
+        st.write("Target Column:", target_column)
+        st.write("Predicted Value:", y_pred[0])
 
 # Run the app
 if __name__ == "__main__":
