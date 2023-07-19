@@ -48,6 +48,14 @@ def train_decision_tree_regression(X, y):
     model = DecisionTreeRegressor(random_state=42)
     model.fit(X, y)
     return model
+ # Function to select important features
+def select_important_features(X_train, X_test, importance_threshold=0.05):
+    model = train_decision_tree_regression(X_train, y_train)
+    feature_importances = pd.Series(model.feature_importances_, index=X_train.columns)
+    important_features = feature_importances[feature_importances > importance_threshold].index.tolist()
+    X_train_selected = X_train[important_features]
+    X_test_selected = X_test[important_features]
+    return X_train_selected, X_test_selected   
 
 # Function to calculate MAPE
 def calculate_mape(y_true, y_pred):
@@ -73,7 +81,8 @@ def display_app():
             return
 
         # Train the decision tree regression model (call the train_decision_tree_regression function)
-        model = train_decision_tree_regression(X_train, y_train)  
+        X_train_selected, X_test_selected = select_important_features(X_train, X_test)  
+
 
         # Get user inputs for feature values
         feature_values = {}
