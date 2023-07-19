@@ -4,11 +4,12 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_percentage_error
 
 # Function to process the uploaded file
-def process_file(upload_file, target_column, drop_columns):
+def process_file(upload_file, target_column):
     df = pd.read_csv(upload_file)
-    df = df.drop(columns=drop_columns)  # Drop the specified columns
     X = df.drop(columns=[target_column])  # Drop the target column from features
+    X = X.apply(pd.to_numeric, errors='coerce')  # Convert features to numeric data type
     y = df[target_column]  # Set the target column as the target variable
+    y = y.apply(pd.to_numeric, errors='coerce')  # Convert target variable to numeric data type
     return X, y
 
 # Train a linear regression model
@@ -33,14 +34,8 @@ def display_app():
         # Prompt user to enter target column
         target_column = st.text_input("Enter the target column name")
 
-        # Prompt user to enter columns to drop
-        drop_columns_input = st.text_input("Enter columns to drop (comma-separated)")
-
-        # Split the input into individual column names and remove leading/trailing whitespaces
-        drop_columns = [col.strip() for col in drop_columns_input.split(",")]
-
         # Process the uploaded file
-        X, y = process_file(uploaded_file, target_column, drop_columns)
+        X, y = process_file(uploaded_file, target_column)
 
         # Check if any of the variables are None (indicating an error occurred)
         if X is None or y is None:
@@ -53,7 +48,7 @@ def display_app():
         feature_values = {}
         for feature in X.columns:
             value = st.text_input(f"Enter value for {feature}")
-            feature_values[feature] = value
+            feature_values[feature] = pd.to_numeric(value, errors='coerce')
 
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
