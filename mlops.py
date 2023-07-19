@@ -8,12 +8,7 @@ def process_file(upload_file, target_column):
     df = pd.read_csv(upload_file)
     X = df.drop(columns=[target_column])  # Drop the target column from features
     y = df[target_column]  # Set the target column as the target variable
-
-    # Perform one-hot encoding for categorical features
-    categorical_features = X.select_dtypes(include=['object']).columns
-    X_encoded = pd.get_dummies(X, columns=categorical_features)
-
-    return X_encoded, y
+    return X, y
 
 # Train a linear regression model
 def train_linear_regression(X, y):
@@ -40,9 +35,6 @@ def display_app():
         # Process the uploaded file
         X, y = process_file(uploaded_file, target_column)
 
-        # Train the linear regression model
-        model = train_linear_regression(X, y)
-
         # Get user inputs for feature values
         feature_values = {}
         for feature in X.columns:
@@ -52,11 +44,15 @@ def display_app():
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
 
+        # Train the linear regression model using the original features
+        model = train_linear_regression(X, y)
+
         # Perform one-hot encoding for categorical features
-        input_encoded = pd.get_dummies(input_df, columns=X.select_dtypes(include=['object']).columns)
+        X_encoded = pd.get_dummies(X, columns=X.select_dtypes(include=['object']).columns)
 
         # Ensure input DataFrame has the same columns as training data
-        input_encoded = input_encoded.reindex(columns=X.columns, fill_value=0)
+        input_encoded = pd.get_dummies(input_df, columns=X.select_dtypes(include=['object']).columns)
+        input_encoded = input_encoded.reindex(columns=X_encoded.columns, fill_value=0)
 
         # Make predictions on the input data
         y_pred = model.predict(input_encoded)
