@@ -28,10 +28,10 @@ def process_file(upload_file, target_column):
     
     X_encoded = pd.get_dummies(X_cat)
     
-    X = pd.concat([X_num,X_encoded],axis=1)
+    X_encoded = pd.concat([X_num,X_encoded],axis=1)
 
     # Split the data into train and test sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
 
     return X_train, X_test, y_train, y_test
 
@@ -69,7 +69,7 @@ def display_app():
 
         # Get user inputs for feature values
         feature_values = {}
-        for feature in X.columns:
+        for feature in X_encoded.columns:
             value = st.text_input(f"Enter value for {feature}")
             feature_values[feature] = float(value) if value else None
 
