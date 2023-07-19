@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import statsmodels.api as sm
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_absolute_percentage_error
 from sklearn.model_selection import train_test_split
@@ -42,8 +43,7 @@ def process_file(upload_file, target_column):
 
     return X_train, X_test, y_train, y_test
 
-
-# Train a linear regression model
+# Train a decision tree regression model
 def train_decision_tree_regression(X, y):
     model = DecisionTreeRegressor(random_state=42)
     model.fit(X, y)
@@ -53,9 +53,40 @@ def train_decision_tree_regression(X, y):
 def calculate_mape(y_true, y_pred):
     return mean_absolute_percentage_error(y_true, y_pred) * 100
 
+# Function to get input from user (text box for numeric, radio button for categorical)
+def get_user_input(feature, is_numeric):
+    if is_numeric:
+        value = st.text_input(f"Enter value for {feature}")
+        return float(value) if value else None
+    else:
+        unique_values = feature_values[feature]
+        selected_value = st.radio(f"Select value for {feature}", unique_values)
+        return selected_value
+
+# Function to perform backward elimination
+def backward_elimination(X, y):
+    cols = list(X.columns)
+    p_values = pd.Series(dtype='float64')
+    
+    while len(cols) > 0:
+        Xc = X[cols]
+        model = sm.OLS(y, Xc).fit()
+        p = model.pvalues
+        pmax = p.max()
+        pid = p.idxmax()
+        p_values = p_values.append(pd.Series({pid: pmax}))
+        
+        if pmax > 0.05:
+            cols.remove(pid)
+            print('Variable removed:', pid, 'P-value:', pmax)
+        else:
+            break
+
+    return cols, p_values
+
 # Display file upload and model evaluation
 def display_app():
-    st.title("Decision Tree Regression with Diamond Dataset")  # Corrected the title
+    st.title("Decision Tree Regression with Diamond Dataset")
     st.header("Upload Your Data")
 
     # File upload control
@@ -72,14 +103,17 @@ def display_app():
         if X_train is None or X_test is None or y_train is None or y_test is None:
             return
 
+        # Perform backward elimination
+        selected_cols, p_values = backward_elimination(X_train, y_train)
+
         # Train the decision tree regression model (call the train_decision_tree_regression function)
-        model = train_decision_tree_regression(X_train, y_train)  
+        model = train_decision_tree_regression(X_train[selected_cols], y_train)
 
         # Get user inputs for feature values
         feature_values = {}
-        for feature in X_train.columns:
-            value = st.text_input(f"Enter value for {feature}")
-            feature_values[feature] = float(value) if value else None
+        for feature in selected_cols:
+            is_numeric = X_train[feature].dtype.kind in 'biufc'  # Check if the feature is numeric
+            feature_values[feature] = get_user_input(feature, is_numeric)
 
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
@@ -88,7 +122,7 @@ def display_app():
         input_encoded = pd.get_dummies(input_df)
 
         # Align input data with training data to ensure consistent columns
-        input_encoded = input_encoded.reindex(columns=X_train.columns, fill_value=0)
+        input_encoded = input_encoded.reindex(columns=selected_cols, fill_value=0)
 
         # Handle missing values in the user input
         input_encoded.fillna(0, inplace=True)  # Replace missing values with 0
@@ -102,14 +136,20 @@ def display_app():
         st.write("Predicted Value:", y_pred[0])
 
         # Calculate MAPE for training and test sets
-        y_train_pred = model.predict(X_train)
-        y_test_pred = model.predict(X_test)
+        y_train_pred = model.predict(X_train[selected_cols])
+        y_test_pred = model.predict(X_test[selected_cols])
         train_mape = calculate_mape(y_train, y_train_pred)
         test_mape = calculate_mape(y_test, y_test_pred)
 
         st.subheader("Model Performance")
         st.write("Training MAPE:", train_mape)
         st.write("Test MAPE:", test_mape)
+
+        # Display the variables and their corresponding p-values after backward elimination
+        st.subheader("Backward Elimination Results")
+        p_values.index = selected_cols
+        st.write("Selected Variables:", selected_cols)
+        st.write("P-values:", p_values)
 
 # Run the app
 if __name__ == "__main__":
