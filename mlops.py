@@ -106,9 +106,33 @@ def display_app():
 
         # Button
         if st.button("Predict Price"):
-            st.write("Price Predicted!")
-            st.write("volume", float(x) * float(y) * float(z))
-            yhat_test = model.predict([[float(carat), cut_value, color_value, clarity_value, float(depth), float(table), float(x) * float(y) * float(z)]])
+    st.write("Price Predicted!")
+    
+    # Ensure all input fields are filled
+    if not all([carat, depth, table, x, y, z]):
+        st.warning("Please fill all input fields.")
+    else:
+        # Convert input values to float
+        carat = float(carat)
+        depth = float(depth)
+        table = float(table)
+        x = float(x)
+        y = float(y)
+        z = float(z)
+
+        # Perform prediction if the input data is valid
+        volume = x * y * z
+        cut_value = cut_mapping[cut]
+        color_value = color_mapping[color]
+        clarity_value = clarity_mapping[clarity]
+
+        # Make sure the input data has the same number of features as the training data
+        input_data = [[carat, cut_value, color_value, clarity_value, depth, table, volume]]
+        if len(input_data[0]) != len(X_train.columns):
+            st.warning("Invalid input data. Make sure all features are present.")
+        else:
+            # Make the prediction
+            yhat_test = model.predict(input_data)
             st.write("Diamond Price is $", yhat_test[0])
 
 # Run the app
