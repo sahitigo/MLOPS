@@ -28,8 +28,11 @@ def process_file(upload_file, target_column):
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Convert numeric features to float
-    X_train[numeric_features] = X_train[numeric_features].astype(float)
-    X_test[numeric_features] = X_test[numeric_features].astype(float)
+    for feature in numeric_features:
+        if feature in X_train.columns:
+            X_train[feature] = X_train[feature].astype(float)
+        if feature in X_test.columns:
+            X_test[feature] = X_test[feature].astype(float)
 
     return X_train, X_test, y_train, y_test, numeric_features, categorical_features
 
@@ -68,21 +71,25 @@ def display_app():
         # Get user inputs for feature values (numeric columns)
         numeric_values = {}
         for feature in numeric_features:
-            value = st.number_input(f"Enter value for {feature}")
-            numeric_values[feature] = float(value) if value else np.nan
+            if feature in X_train.columns:
+                value = st.number_input(f"Enter value for {feature}")
+                numeric_values[feature] = float(value) if value else np.nan
 
         # Get user inputs for feature values (categorical columns)
         categorical_values = {}
         for feature in categorical_features:
-            value = st.text_input(f"Enter value for {feature}")
-            categorical_values[feature] = value
+            if feature in X_train.columns:
+                value = st.text_input(f"Enter value for {feature}")
+                categorical_values[feature] = value
 
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([numeric_values])
         input_df = pd.concat([input_df, pd.DataFrame([categorical_values])], axis=1)
 
         # Convert numeric features to float
-        input_df[numeric_features] = input_df[numeric_features].astype(float)
+        for feature in numeric_features:
+            if feature in input_df.columns:
+                input_df[feature] = input_df[feature].astype(float)
 
         # Perform one-hot encoding for categorical features
         input_encoded = pd.get_dummies(input_df, columns=categorical_features)
