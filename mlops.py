@@ -1,14 +1,25 @@
 import streamlit as st
 import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_percentage_error
 
 # Function to process the uploaded file
 def process_file(upload_file):
     df = pd.read_csv(upload_file)
-    X = df.iloc[:, :-1].values  # Assuming the features are in the first columns
-    y = df.iloc[:, -1].values   # Assuming the target variable is in the last column
-    return X, y
+    X = df.iloc[:, :-1]  # Assuming the features are in the first columns
+    y = df.iloc[:, -1]   # Assuming the target variable is in the last column
+
+    # Perform one-hot encoding for categorical features
+    categorical_features = X.select_dtypes(include=['object']).columns
+    ct = ColumnTransformer(
+        transformers=[('encoder', OneHotEncoder(), categorical_features)],
+        remainder='passthrough'
+    )
+    X_encoded = ct.fit_transform(X)
+
+    return X_encoded, y
 
 # Train a linear regression model
 def train_linear_regression(X, y):
