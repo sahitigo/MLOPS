@@ -64,7 +64,7 @@ def display_app():
         numeric_values = {}
         for feature in numeric_features:
             value = st.number_input(f"Enter value for {feature}")
-            numeric_values[feature] = float(value) if value else None
+            numeric_values[feature] = float(value) if value else 0.0  # Replace missing values with 0.0
 
         # Get user inputs for feature values (categorical columns)
         categorical_values = {}
