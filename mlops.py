@@ -15,17 +15,23 @@ def process_file(upload_file, target_column):
         return None, None, None, None
 
     # Separate the features and target variable
-    X = df.drop(columns=[target_column])
-    y = df[target_column]
+    # Separate the features and target variable
+    X = df.drop(columns=['price'])
+    y = df['price']
 
     # Handle missing values
     X.fillna(0, inplace=True)  # Replace missing values with 0
-
+    
     # Perform one-hot encoding for categorical features
-    X_encoded = pd.get_dummies(X)
+    X_cat = X.select_dtypes(include='object')
+    X_num = X.select_dtypes(include='number')
+    
+    X_encoded = pd.get_dummies(X_cat)
+    
+    X = pd.concat([X_num,X_encoded],axis=1)
 
     # Split the data into train and test sets
-    X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     return X_train, X_test, y_train, y_test
 
