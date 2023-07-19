@@ -13,7 +13,7 @@ def process_file(upload_file, target_column, drop_columns):
     X = df.drop(columns=[target_column])  # Drop the target column from features
     y = df[target_column]  # Set the target column as the target variable
 
-    return X, y
+    return X, y, X.columns
 
 # Train a linear regression model
 def train_linear_regression(X, y):
@@ -44,11 +44,19 @@ def display_app():
         drop_columns = [col.strip() for col in drop_columns_input.split(",")]
 
         # Process the uploaded file
-        X, y = process_file(uploaded_file, target_column, drop_columns)
+        X, y, feature_names = process_file(uploaded_file, target_column, drop_columns)
+
+        # Display feature names
+        st.subheader("Feature Names")
+        st.write(feature_names)
+
+        # Display dataset preview
+        st.subheader("Dataset Preview")
+        st.write(df.head())
 
         # Get user inputs for feature values
         feature_values = {}
-        for feature in X.columns:
+        for feature in feature_names:
             value = st.text_input(f"Enter value for {feature}")
             feature_values[feature] = value
 
