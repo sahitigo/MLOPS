@@ -22,9 +22,6 @@ def process_file(upload_file, target_column):
     X.fillna(0, inplace=True)  # Replace missing values with 0
 
     # Perform one-hot encoding for categorical features
-    X_cat = X.select_dtypes(include='object')
-    X_num = X.select_dtypes(include='number')
-    
     X_encoded = pd.get_dummies(X)
 
     # Split the data into train and test sets
@@ -42,7 +39,6 @@ def train_linear_regression(X, y):
 def calculate_mape(y_true, y_pred):
     return mean_absolute_percentage_error(y_true, y_pred) * 100
 
-# Display file upload and model evaluation
 def display_app():
     st.title("Linear Regression with Diamond Dataset")
     st.header("Upload Your Data")
@@ -64,45 +60,56 @@ def display_app():
         # Train the linear regression model (call the train_linear_regression function)
         model = train_linear_regression(X_train, y_train)
 
-        feature_values = {}
-        for feature in X_train.columns:
-            if X_train[feature].dtype == "object":  # Categorical column
-                unique_values = X_train[feature].unique()
-                selected_value = st.selectbox(f"Select value for {feature}", unique_values)
-                feature_values[feature] = selected_value
-            else:  # Numerical column
-                value = st.text_input(f"Enter value for {feature}")
-                feature_values[feature] = float(value) if value else None
-    
-        # Create a DataFrame with the user inputs
-        input_df = pd.DataFrame([feature_values])
-    
-        # Perform one-hot encoding for the input data
-        input_encoded = pd.get_dummies(input_df)
-    
-        # Align input data with training data to ensure consistent columns
-        input_encoded = input_encoded.reindex(columns=X_train.columns, fill_value=0)
-    
-        # Handle missing values in the user input
-        input_encoded.fillna(0, inplace=True)  # Replace missing values with 0
-    
-        # Make predictions on the input data
-        y_pred = model.predict(input_encoded)
-    
-        # Display the predictions
-        st.subheader("Prediction")
-        st.write("Target Column:", target_column)
-        st.write("Predicted Value:", y_pred[0])
-    
-        # Calculate MAPE for training and test sets
-        y_train_pred = model.predict(X_train)
-        y_test_pred = model.predict(X_test)
-        train_mape = calculate_mape(y_train, y_train_pred)
-        test_mape = calculate_mape(y_test, y_test_pred)
-    
-        st.subheader("Model Performance")
-        st.write("Training MAPE:", train_mape)
-        st.write("Test MAPE:", test_mape)
+        # Text Field
+        st.subheader("Carat")
+        carat = st.text_input("Enter Carat")
+        st.write("Carat:", carat)
+
+        st.subheader("Depth")
+        depth = st.text_input("Enter Depth")
+        st.write("Depth:", depth)
+
+        st.subheader("Table")
+        table = st.text_input("Enter Table")
+        st.write("Table:", table)
+
+        st.subheader("x")
+        x = st.text_input("Enter x")
+        st.write("x:", x)
+
+        st.subheader("y")
+        y = st.text_input("Enter y")
+        st.write("y:", y)
+
+        st.subheader("z")
+        z = st.text_input("Enter z")
+        st.write("z:", z)
+
+        # Radio Buttons
+        st.subheader("Cut")
+        cut = st.radio("Select Cut value", ["Fair", "Good", "Very Good", "Premium", "Ideal"])
+        st.write("Cut value:", cut)
+        cut_mapping = {"Fair": 1, "Good": 2, "Very Good": 3, "Premium": 4, "Ideal": 5}
+        cut_value = cut_mapping[cut]
+
+        st.subheader("Color")
+        color = st.radio("Select color", ["D", "E", "F", "G", "H", "I", "J"])
+        st.write("Color:", color)
+        color_mapping = {"D": 7, "E": 6, "F": 5, "G": 4, "H": 3, "I": 2, "J": 1}
+        color_value = color_mapping[color]
+
+        st.subheader("Clarity")
+        clarity = st.radio("Select Clarity", ["I1", "SI2", "SI1", "VS2", "VS1", "VVS2", "VVS1", "IF"])
+        st.write("Clarity Level:", clarity)
+        clarity_mapping = {"I1": 1, "SI2": 2, "SI1": 3, "VS2": 4, "VS1": 5, "VVS2": 6, "VVS1": 7, "IF": 8}
+        clarity_value = clarity_mapping[clarity]
+
+        # Button
+        if st.button("Predict Price"):
+            st.write("Price Predicted!")
+            st.write("volume", float(x) * float(y) * float(z))
+            yhat_test = model.predict([[float(carat), cut_value, color_value, clarity_value, float(depth), float(table), float(x) * float(y) * float(z)]])
+            st.write("Diamond Price is $", yhat_test[0])
 
 # Run the app
 if __name__ == "__main__":
