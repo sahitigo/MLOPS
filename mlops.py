@@ -19,13 +19,14 @@ def process_file(upload_file, target_column):
     X = df.drop(columns=[target_column])
     y = df[target_column]
 
-    # Handle missing values
-    X.fillna(0, inplace=True)  # Replace missing values with 0
+    # Perform one-hot encoding for categorical features
+    categorical_features = X.select_dtypes(include=['object']).columns
+    X_encoded = pd.get_dummies(X, columns=categorical_features)
 
     # Split the data into train and test sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
 
-    return X_train, X_test, y_train, y_test
+    return X_train, X_test, y_train, y_test, categorical_features
 
 # Train a linear regression model
 def train_linear_regression(X, y):
@@ -50,7 +51,7 @@ def display_app():
         target_column = st.text_input("Enter the target column name")
 
         # Process the uploaded file (call the process_file function)
-        X_train, X_test, y_train, y_test = process_file(uploaded_file, target_column)
+        X_train, X_test, y_train, y_test, categorical_features = process_file(uploaded_file, target_column)
 
         # Check if any of the variables are None (indicating an error occurred)
         if X_train is None or X_test is None or y_train is None or y_test is None:
@@ -61,16 +62,21 @@ def display_app():
 
         # Get user inputs for feature values
         feature_values = {}
-        for feature in X_train.columns:
+        for feature in categorical_features:
             value = st.text_input(f"Enter value for {feature}")
-            feature_values[feature] = float(value) if value else None
+            feature_values[feature] = value
 
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
 
+        # Perform one-hot encoding for categorical features
+        input_encoded = pd.get_dummies(input_df, columns=categorical_features)
+
+        # Ensure input DataFrame has the same columns as training data
+        input_encoded = input_encoded.reindex(columns=X_train.columns, fill_value=0)
+
         # Make predictions on the input data
-        input_df.fillna(0, inplace=True)  # Replace missing values with 0
-        y_pred = model.predict(input_df)
+        y_pred = model.predict(input_encoded)
 
         # Display the predictions
         st.subheader("Prediction")
