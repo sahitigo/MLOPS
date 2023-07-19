@@ -23,7 +23,7 @@ def process_file(upload_file, target_column):
 
     # Perform one-hot encoding for categorical features
     X_cat = X.select_dtypes(include='object')
-    X_num = X.select_dtypes(includes='number')
+    X_num = X.select_dtypes(include='number')
     
     X_encoded = pd.get_dummies(X)
 
