@@ -53,32 +53,33 @@ def train_decision_tree_regression(X, y):
 def calculate_mape(y_true, y_pred):
     return mean_absolute_percentage_error(y_true, y_pred) * 100
 
-def get_user_input(feature, is_numeric):
-    if is_numeric:
-        value = st.text_input(f"Enter value for {feature}")
-        return float(value) if value else None
-    else:
-        unique_values = feature_values[feature]
-        selected_value = st.radio(f"Select value for {feature}", unique_values)
-        return selected_value
-
 # Display file upload and model evaluation
 def display_app():
-    # ... (same as in the previous code)
+    st.title("Decision Tree Regression with Diamond Dataset")  # Corrected the title
+    st.header("Upload Your Data")
+
+    # File upload control
+    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
     if uploaded_file is not None:
-        # ... (same as in the previous code)
+        # Prompt user to enter target column
+        target_column = st.text_input("Enter the target column name")
+
+        # Process the uploaded file (call the process_file function)
+        X_train, X_test, y_train, y_test = process_file(uploaded_file, target_column)
+
+        # Check if any of the variables are None (indicating an error occurred)
+        if X_train is None or X_test is None or y_train is None or y_test is None:
+            return
+
+        # Train the decision tree regression model (call the train_decision_tree_regression function)
+        model = train_decision_tree_regression(X_train, y_train)  
 
         # Get user inputs for feature values
         feature_values = {}
         for feature in X_train.columns:
-            is_numeric = X_train[feature].dtype.kind in 'biufc'  # Check if the feature is numeric
-
-            if is_numeric:
-                feature_values[feature] = get_user_input(feature, is_numeric)
-            else:
-                unique_values = X_train[feature].unique()
-                feature_values[feature] = get_user_input(feature, is_numeric)
+            value = st.text_input(f"Enter value for {feature}")
+            feature_values[feature] = float(value) if value else None
 
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
