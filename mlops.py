@@ -1,16 +1,31 @@
 import streamlit as st
 import pandas as pd
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_percentage_error
+from sklearn.model_selection import train_test_split
 
 # Function to process the uploaded file
 def process_file(upload_file, target_column):
+    # Read the CSV file into a DataFrame
     df = pd.read_csv(upload_file)
-    X = df.drop(columns=[target_column])  # Drop the target column from features
-    X = X.apply(pd.to_numeric, errors='coerce')  # Convert features to numeric data type
-    y = df[target_column]  # Set the target column as the target variable
-    y = y.apply(pd.to_numeric, errors='coerce')  # Convert target variable to numeric data type
-    return X, y
+
+    # Check if the target column exists in the DataFrame
+    if target_column not in df.columns:
+        st.error(f"Target column '{target_column}' not found in the dataset.")
+        return None, None, None, None
+
+    # Drop the target column from features and set it as the target variable
+    X = df.drop(columns=[target_column])
+    y = df[target_column]
+
+    # Handle missing values
+    X.fillna(0, inplace=True)  # Replace missing values with 0
+
+    # Split the data into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    return X_train, X_test, y_train, y_test
 
 # Train a linear regression model
 def train_linear_regression(X, y):
@@ -24,7 +39,7 @@ def calculate_mape(y_true, y_pred):
 
 # Display file upload and model evaluation
 def display_app():
-    st.title("Linear Regression with Custom Dataset")
+    st.title("Linear Regression with Diamond Dataset")
     st.header("Upload Your Data")
 
     # File upload control
@@ -34,26 +49,27 @@ def display_app():
         # Prompt user to enter target column
         target_column = st.text_input("Enter the target column name")
 
-        # Process the uploaded file
-        X, y = process_file(uploaded_file, target_column)
+        # Process the uploaded file (call the process_file function)
+        X_train, X_test, y_train, y_test = process_file(uploaded_file, target_column)
 
         # Check if any of the variables are None (indicating an error occurred)
-        if X is None or y is None:
+        if X_train is None or X_test is None or y_train is None or y_test is None:
             return
 
-        # Train the linear regression model
-        model = train_linear_regression(X, y)
+        # Train the linear regression model (call the train_linear_regression function)
+        model = train_linear_regression(X_train, y_train)
 
         # Get user inputs for feature values
         feature_values = {}
-        for feature in X.columns:
+        for feature in X_train.columns:
             value = st.text_input(f"Enter value for {feature}")
-            feature_values[feature] = pd.to_numeric(value, errors='coerce')
+            feature_values[feature] = float(value) if value else None
 
         # Create a DataFrame with the user inputs
         input_df = pd.DataFrame([feature_values])
 
         # Make predictions on the input data
+        input_df.fillna(0, inplace=True)  # Replace missing values with 0
         y_pred = model.predict(input_df)
 
         # Display the predictions
