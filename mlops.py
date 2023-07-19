@@ -87,6 +87,16 @@ def display_app():
         st.write("Target Column:", target_column)
         st.write("Predicted Value:", y_pred[0])
 
+        # Calculate MAPE for training and test sets
+        y_train_pred = model.predict(X_train)
+        y_test_pred = model.predict(X_test)
+        train_mape = calculate_mape(y_train, y_train_pred)
+        test_mape = calculate_mape(y_test, y_test_pred)
+
+        st.subheader("Model Performance")
+        st.write("Training MAPE:", train_mape)
+        st.write("Test MAPE:", test_mape)
+
 # Run the app
 if __name__ == "__main__":
     display_app()
