@@ -42,7 +42,6 @@ def process_file(upload_file, target_column):
 
     return X_train, X_test, y_train, y_test
 
-
 # Train a linear regression model
 def train_decision_tree_regression(X, y):
     model = DecisionTreeRegressor(random_state=42)
@@ -52,6 +51,12 @@ def train_decision_tree_regression(X, y):
 # Function to calculate MAPE
 def calculate_mape(y_true, y_pred):
     return mean_absolute_percentage_error(y_true, y_pred) * 100
+
+# Function to perform feature selection using feature importance
+def perform_feature_selection(model, X_train, num_features):
+    feature_importance = pd.Series(model.feature_importances_, index=X_train.columns)
+    selected_features = feature_importance.nlargest(num_features).index
+    return X_train[selected_features]
 
 # Display file upload and model evaluation
 def display_app():
@@ -73,11 +78,22 @@ def display_app():
             return
 
         # Train the decision tree regression model (call the train_decision_tree_regression function)
-        model = train_decision_tree_regression(X_train, y_train)  
+        model = train_decision_tree_regression(X_train, y_train)
+
+        # Get the number of features to select (user input)
+        num_features_to_select = st.number_input("Select the number of features to keep", min_value=1,
+                                                 max_value=len(X_train.columns), step=1, value=5)
+
+        # Perform feature selection using feature importance
+        X_train_selected = perform_feature_selection(model, X_train, num_features_to_select)
+        X_test_selected = X_test[X_train_selected.columns]
+
+        # Train the model on the selected features
+        model_selected = train_decision_tree_regression(X_train_selected, y_train)
 
         # Get user inputs for feature values
         feature_values = {}
-        for feature in X_train.columns:
+        for feature in X_train_selected.columns:
             value = st.text_input(f"Enter value for {feature}")
             feature_values[feature] = float(value) if value else None
 
@@ -88,13 +104,13 @@ def display_app():
         input_encoded = pd.get_dummies(input_df)
 
         # Align input data with training data to ensure consistent columns
-        input_encoded = input_encoded.reindex(columns=X_train.columns, fill_value=0)
+        input_encoded = input_encoded.reindex(columns=X_train_selected.columns, fill_value=0)
 
         # Handle missing values in the user input
         input_encoded.fillna(0, inplace=True)  # Replace missing values with 0
 
         # Make predictions on the input data
-        y_pred = model.predict(input_encoded)
+        y_pred = model_selected.predict(input_encoded)
 
         # Display the predictions
         st.subheader("Prediction")
@@ -102,8 +118,8 @@ def display_app():
         st.write("Predicted Value:", y_pred[0])
 
         # Calculate MAPE for training and test sets
-        y_train_pred = model.predict(X_train)
-        y_test_pred = model.predict(X_test)
+        y_train_pred = model_selected.predict(X_train_selected)
+        y_test_pred = model_selected.predict(X_test_selected)
         train_mape = calculate_mape(y_train, y_train_pred)
         test_mape = calculate_mape(y_test, y_test_pred)
 
