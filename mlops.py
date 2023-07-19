@@ -17,8 +17,8 @@ def process_file(upload_file, target_column):
         return None, None, None, None
 
     # Separate numeric and categorical columns
-    numeric_features = df.select_dtypes(include='number').columns
-    categorical_features = df.select_dtypes(include='object').columns
+    numeric_features = df.select_dtypes(include='number').columns.tolist()
+    categorical_features = df.select_dtypes(include='object').columns.tolist()
 
     # Drop the target column from features and set it as the target variable
     X = df.drop(columns=[target_column])
