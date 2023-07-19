@@ -55,7 +55,7 @@ def calculate_mape(y_true, y_pred):
 
 # Display file upload and model evaluation
 def display_app():
-    st.title("Linear Regression with Diamond Dataset")
+    st.title("Decision Tree Regression with Diamond Dataset")  # Corrected the title
     st.header("Upload Your Data")
 
     # File upload control
@@ -72,8 +72,8 @@ def display_app():
         if X_train is None or X_test is None or y_train is None or y_test is None:
             return
 
-        # Train the linear regression model (call the train_linear_regression function)
-         model = train_decision_tree_regression(X_train, y_train)
+        # Train the decision tree regression model (call the train_decision_tree_regression function)
+        model = train_decision_tree_regression(X_train, y_train)  
 
         # Get user inputs for feature values
         feature_values = {}
