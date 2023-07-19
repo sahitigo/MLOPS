@@ -3,13 +3,14 @@ import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_percentage_error
+from sklearn.model_selection import train_test_split
 
 # Function to process the uploaded file
 def process_file(upload_file, target_column):
     df = pd.read_csv(upload_file)
     if target_column not in df.columns:
         st.error(f"Target column '{target_column}' not found in the dataset.")
-        return None, None
+        return None, None, None, None
 
     X = df.drop(columns=[target_column])  # Drop the target column from features
     y = df[target_column]  # Set the target column as the target variable
@@ -18,7 +19,10 @@ def process_file(upload_file, target_column):
     categorical_features = X.select_dtypes(include=['object']).columns
     X_encoded = pd.get_dummies(X, columns=categorical_features)
 
-    return X_encoded, y
+    # Split the data into train and test sets
+    X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
+
+    return X_train, X_test, y_train, y_test
 
 # Train a linear regression model
 def train_linear_regression(X, y):
@@ -43,26 +47,30 @@ def display_app():
         target_column = st.text_input("Enter the target column name")
 
         # Process the uploaded file
-        X, y = process_file(uploaded_file, target_column)
+        X_train, X_test, y_train, y_test = process_file(uploaded_file, target_column)
 
-        if X is None or y is None:
+        if X_train is None or X_test is None or y_train is None or y_test is None:
             return
 
         # Train the linear regression model
-        model = train_linear_regression(X, y)
+        model = train_linear_regression(X_train, y_train)
 
         # Predict on the training set
-        y_pred = model.predict(X)
+        y_train_pred = model.predict(X_train)
+        mape_train = calculate_mape(y_train, y_train_pred)
 
-        # Calculate MAPE
-        mape = calculate_mape(y, y_pred)
+        # Predict on the test set
+        y_test_pred = model.predict(X_test)
+        mape_test = calculate_mape(y_test, y_test_pred)
 
         # Display the results
         st.subheader("Data Summary")
-        st.write("Number of samples:", X.shape[0])
-        st.write("Number of features:", X.shape[1])
+        st.write("Train set samples:", X_train.shape[0])
+        st.write("Test set samples:", X_test.shape[0])
+        st.write("Number of features:", X_train.shape[1])
         st.subheader("Model Evaluation")
-        st.write("Mean Absolute Percentage Error (MAPE):", mape)
+        st.write("Train set MAPE:", mape_train)
+        st.write("Test set MAPE:", mape_test)
 
 # Run the app
 if __name__ == "__main__":
