@@ -22,6 +22,9 @@ def process_file(upload_file, target_column):
     X.fillna(0, inplace=True)  # Replace missing values with 0
 
     # Perform one-hot encoding for categorical features
+    X_cat = X.select_dtypes(include='object')
+    X_num = X.select_dtypes(include='number')
+    
     X_encoded = pd.get_dummies(X)
 
     # Split the data into train and test sets
@@ -39,6 +42,7 @@ def train_linear_regression(X, y):
 def calculate_mape(y_true, y_pred):
     return mean_absolute_percentage_error(y_true, y_pred) * 100
 
+# Display file upload and model evaluation
 def display_app():
     st.title("Linear Regression with Diamond Dataset")
     st.header("Upload Your Data")
@@ -60,81 +64,41 @@ def display_app():
         # Train the linear regression model (call the train_linear_regression function)
         model = train_linear_regression(X_train, y_train)
 
-        # Text Field
-        st.subheader("Carat")
-        carat = st.text_input("Enter Carat")
-        st.write("Carat:", carat)
+        # Get user inputs for feature values
+        feature_values = {}
+        for feature in X_train.columns:
+            value = st.text_input(f"Enter value for {feature}")
+            feature_values[feature] = float(value) if value else None
 
-        st.subheader("Depth")
-        depth = st.text_input("Enter Depth")
-        st.write("Depth:", depth)
+        # Create a DataFrame with the user inputs
+        input_df = pd.DataFrame([feature_values])
 
-        st.subheader("Table")
-        table = st.text_input("Enter Table")
-        st.write("Table:", table)
+        # Perform one-hot encoding for the input data
+        input_encoded = pd.get_dummies(input_df)
 
-        st.subheader("x")
-        x = st.text_input("Enter x")
-        st.write("x:", x)
+        # Align input data with training data to ensure consistent columns
+        input_encoded = input_encoded.reindex(columns=X_train.columns, fill_value=0)
 
-        st.subheader("y")
-        y = st.text_input("Enter y")
-        st.write("y:", y)
+        # Handle missing values in the user input
+        input_encoded.fillna(0, inplace=True)  # Replace missing values with 0
 
-        st.subheader("z")
-        z = st.text_input("Enter z")
-        st.write("z:", z)
+        # Make predictions on the input data
+        y_pred = model.predict(input_encoded)
 
-        # Radio Buttons
-        st.subheader("Cut")
-        cut = st.radio("Select Cut value", ["Fair", "Good", "Very Good", "Premium", "Ideal"])
-        st.write("Cut value:", cut)
-        cut_mapping = {"Fair": 1, "Good": 2, "Very Good": 3, "Premium": 4, "Ideal": 5}
-        cut_value = cut_mapping[cut]
+        # Display the predictions
+        st.subheader("Prediction")
+        st.write("Target Column:", target_column)
+        st.write("Predicted Value:", y_pred[0])
 
-        st.subheader("Color")
-        color = st.radio("Select color", ["D", "E", "F", "G", "H", "I", "J"])
-        st.write("Color:", color)
-        color_mapping = {"D": 7, "E": 6, "F": 5, "G": 4, "H": 3, "I": 2, "J": 1}
-        color_value = color_mapping[color]
+        # Calculate MAPE for training and test sets
+        y_train_pred = model.predict(X_train)
+        y_test_pred = model.predict(X_test)
+        train_mape = calculate_mape(y_train, y_train_pred)
+        test_mape = calculate_mape(y_test, y_test_pred)
 
-        st.subheader("Clarity")
-        clarity = st.radio("Select Clarity", ["I1", "SI2", "SI1", "VS2", "VS1", "VVS2", "VVS1", "IF"])
-        st.write("Clarity Level:", clarity)
-        clarity_mapping = {"I1": 1, "SI2": 2, "SI1": 3, "VS2": 4, "VS1": 5, "VVS2": 6, "VVS1": 7, "IF": 8}
-        clarity_value = clarity_mapping[clarity]
-
-        if st.button("Predict Price"):
-            st.write("Price Predicted!")
-    
-            # Convert input values to float
-            carat = float(carat)
-            depth = float(depth)
-            table = float(table)
-            x = float(x)
-            y = float(y)
-            z = float(z)
-    
-            # Ensure all input fields are filled
-            if not all([carat, depth, table, x, y, z]):
-                st.warning("Please fill all input fields.")
-            else:
-                # Perform prediction if the input data is valid
-                volume = x * y * z
-                input_data = [[carat, depth, table, x, y, z, volume, cut_value, color_value, clarity_value]]
-    
-                # Convert input_data to DataFrame with the same columns as X_train
-                input_df = pd.DataFrame(input_data, columns=X_train.columns)
-    
-                # Perform one-hot encoding for the input data
-                input_df_encoded = pd.get_dummies(input_df)
-    
-                # Align the input data with the training data to ensure consistent columns
-                input_df_aligned, _ = input_df_encoded.align(X_train, join='right', axis=1, fill_value=0)
-    
-                # Make the prediction
-                yhat_test = model.predict(input_df_aligned)
-                st.write("Diamond Price is $", yhat_test[0])
+        st.subheader("Model Performance")
+        st.write("Training MAPE:", train_mape)
+        st.write("Test MAPE:", test_mape)
 
 # Run the app
 if __name__ == "__main__":
