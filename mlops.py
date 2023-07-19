@@ -28,7 +28,7 @@ def calculate_mape(y_true, y_pred):
 
 # Display file upload and model evaluation
 def display_app():
-    st.title("Linear Regression with Custom Dataset")
+    st.title("Linear Regression with Diamond Dataset")
     st.header("Upload Your Data")
 
     # File upload control
