@@ -15,20 +15,17 @@ def process_file(upload_file, target_column):
         return None, None, None, None
 
     # Separate the features and target variable
-    # Separate the features and target variable
-    X = df.drop(columns=['price'])
-    y = df['price']
+    X = df.drop(columns=[target_column])
+    y = df[target_column]
 
     # Handle missing values
     X.fillna(0, inplace=True)  # Replace missing values with 0
-    
+
     # Perform one-hot encoding for categorical features
     X_cat = X.select_dtypes(include='object')
-    X_num = X.select_dtypes(include='number')
+    X_num = X.select_dtypes(includes='number')
     
-    X_encoded = pd.get_dummies(X_cat)
-    
-    X_encoded = pd.concat([X_num,X_encoded],axis=1)
+    X_encoded = pd.dummies
 
     # Split the data into train and test sets
     X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
@@ -69,7 +66,7 @@ def display_app():
 
         # Get user inputs for feature values
         feature_values = {}
-        for feature in X_encoded.columns:
+        for feature in X_train.columns:
             value = st.text_input(f"Enter value for {feature}")
             feature_values[feature] = float(value) if value else None
 
